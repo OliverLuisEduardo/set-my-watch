@@ -5,7 +5,6 @@ import type { Instante, Movimento } from '@/motor/tipos';
 interface Props {
   instante: Instante;
   movimento: Movimento;
-  congelado: boolean;
 }
 
 /**
@@ -13,26 +12,26 @@ interface Props {
  * o marcador anda com a batida do movimento até o próximo :00.
  * O segundo :00 tem estado próprio: é o instante de soltar a coroa.
  */
-export function EscalaContagem({ instante, movimento, congelado }: Props) {
+export function EscalaContagem({ instante, movimento }: Props) {
   const t = useTextos();
   const s = instante.segundo + quantizarMs(instante.ms, movimento) / 1000;
-  const soltar = !congelado && instante.segundo === 0;
+  const soltar = instante.segundo === 0;
   const faltam = 60 - instante.segundo;
-  const reta = !congelado && !soltar && faltam <= 10;
+  const reta = !soltar && faltam <= 10;
   const x = (s / 60) * 600;
 
   return (
     <div>
       <div className="flex items-end justify-between gap-4">
         <p className="pb-1 text-lg font-medium text-tinta-2">
-          {congelado ? t.contagem.parada : soltar ? <strong key="agora" className="surgir text-2xl font-bold text-tinta">{t.contagem.agora}</strong> : t.contagem.em}
+          {soltar ? <strong key="agora" className="surgir text-2xl font-bold text-tinta">{t.contagem.agora}</strong> : t.contagem.em}
         </p>
         <p
           className={`font-bold leading-none transition-[font-size] duration-300 ease-saida-expo ${
             soltar || reta ? 'text-7xl' : 'text-5xl'
           }`}
         >
-          {congelado ? '--' : soltar ? '00' : String(faltam).padStart(2, '0')}
+          {soltar ? '00' : String(faltam).padStart(2, '0')}
           <span className="ml-1 text-2xl font-medium text-tinta-2">s</span>
         </p>
       </div>
@@ -58,11 +57,9 @@ export function EscalaContagem({ instante, movimento, congelado }: Props) {
             {k}
           </text>
         ))}
-        {!congelado && (
-          <g transform={`translate(${x} 0)`}>
-            <path d="M 0 -3 L -8 -17 L 8 -17 Z" className="fill-revisao" />
-          </g>
-        )}
+        <g transform={`translate(${x} 0)`}>
+          <path d="M 0 -3 L -8 -17 L 8 -17 Z" className="fill-revisao" />
+        </g>
       </svg>
     </div>
   );

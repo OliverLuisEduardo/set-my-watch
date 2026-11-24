@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { AvisoZona } from '@/components/AvisoZona';
 import { EscalaContagem } from '@/components/EscalaContagem';
@@ -14,7 +14,7 @@ import { IDIOMAS, TEXTOS, idiomaDoNavegador, type Idioma } from '@/i18n/textos';
 import { ARQUITETURAS } from '@/motor/arquiteturas';
 import { fracaoLunar } from '@/motor/calendario';
 import { FUSOS_RAPIDOS } from '@/motor/fusos';
-import { POSICAO_ZERO, fusoDoSistema } from '@/motor/tempo';
+import { fusoDoSistema } from '@/motor/tempo';
 import type { FonteTempo, Movimento } from '@/motor/tipos';
 import { naZonaProibida } from '@/motor/zonaProibida';
 import { itensLegenda } from '@/ui/legenda';
@@ -25,6 +25,8 @@ const ehIdioma = (v: unknown): v is Idioma => IDIOMAS.some((i) => i.id === v);
 const ehArquitetura = (v: unknown): v is string => ARQUITETURAS.some((a) => a.id === v);
 const ehMovimento = (v: unknown): v is Movimento => MOVIMENTOS.some((m) => m === v);
 const ehIndiceFuso = (v: unknown): v is number => typeof v === 'number' && v >= 0 && v < FUSOS_RAPIDOS.length;
+// A tela sempre mostra a hora ao vivo do sistema.
+const FONTE_AO_VIVO: FonteTempo = { tipo: 'ao-vivo' };
 
 export default function App() {
   const [tema, setTema] = usePreferencia<Tema>('tema', 'claro', ehTema);
@@ -34,7 +36,6 @@ export default function App() {
   const [movimento, setMovimento] = usePreferencia<Movimento>('movimento-v2', 1, ehMovimento);
   const [fusoIndice, setFusoIndice] = usePreferencia('fuso', 0, ehIndiceFuso);
   const [fusoGmtIndice, setFusoGmtIndice] = usePreferencia('fuso-gmt', 1, ehIndiceFuso);
-  const [zero, setZero] = useState(false);
   const [ajustesAbertos, setAjustesAbertos] = useState(false);
 
   const t = TEXTOS[idioma];
@@ -51,16 +52,12 @@ export default function App() {
     document.querySelector('meta[name="description"]')?.setAttribute('content', t.descricao);
   }, [idioma, t]);
 
-  const fonte = useMemo<FonteTempo>(
-    () => (zero ? { tipo: 'congelada', instante: POSICAO_ZERO } : { tipo: 'ao-vivo' }),
-    [zero],
-  );
-  const relogio = useRelogio({ fonte, movimento, fuso: FUSOS_RAPIDOS[fusoIndice].fuso });
-  const relogioGmt = useRelogio({ fonte, movimento, fuso: FUSOS_RAPIDOS[fusoGmtIndice].fuso });
+  const relogio = useRelogio({ fonte: FONTE_AO_VIVO, movimento, fuso: FUSOS_RAPIDOS[fusoIndice].fuso });
+  const relogioGmt = useRelogio({ fonte: FONTE_AO_VIVO, movimento, fuso: FUSOS_RAPIDOS[fusoGmtIndice].fuso });
   const telaAcesa = useWakeLock();
 
   const { instante: i, angulos, epocaMs } = relogio;
-  const perigo = !zero && naZonaProibida(i.hora, arquitetura.zonaProibida);
+  const perigo = naZonaProibida(i.hora, arquitetura.zonaProibida);
   const gmt = ehGmt
     ? { instante: relogioGmt.instante, angulos: relogioGmt.angulos, rotulo: t.fusos[FUSOS_RAPIDOS[fusoGmtIndice].id] }
     : undefined;
@@ -106,8 +103,6 @@ export default function App() {
               ativo: telaAcesa.ativo,
               alternar: () => void (telaAcesa.ativo ? telaAcesa.desativar() : telaAcesa.ativar()),
             }}
-            zero={zero}
-            aoMudarZero={setZero}
           />
         )}
 
@@ -130,9 +125,9 @@ export default function App() {
           {/* Ordem de leitura na bancada: hora, perigo, contagem, estado da data, peças do mostrador. */}
           <aside className="flex flex-col gap-7 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:pt-6">
             <HoraReferencia hora={doisDigitos(i.hora)} minuto={doisDigitos(i.minuto)} segundo={doisDigitos(i.segundo)} data={dataLonga} />
-            {perigo && <AvisoZona zona={arquitetura.zonaProibida} ativa congelado={false} />}
-            <EscalaContagem instante={i} movimento={movimento} congelado={zero} />
-            {!perigo && <AvisoZona zona={arquitetura.zonaProibida} ativa={false} congelado={zero} />}
+            {perigo && <AvisoZona zona={arquitetura.zonaProibida} ativa />}
+            <EscalaContagem instante={i} movimento={movimento} />
+            {!perigo && <AvisoZona zona={arquitetura.zonaProibida} ativa={false} />}
             <Legenda itens={itens} perigo={perigo} />
           </aside>
 

@@ -168,7 +168,7 @@ Drafting-template corners: containers round at 0.875rem, controls at 0.625rem, b
 - **Focus:** 2px construction-blue outline, 3px offset, following the control's own corner.
 
 ### Navigation
-- Top bar: wordmark left, a single Settings button right. Every option lives in one inline settings panel: theme (light/dark), language (pt-BR, en, es), movement (quartz by default), reference zone, GMT second zone, keep-screen-on and zero-position switches.
+- Top bar: wordmark left, a single Settings button right. Every option lives in one inline settings panel: theme (light/dark), language (pt-BR, en, es), movement (quartz by default), reference zone, GMT second zone, keep-screen-on switch.
 
 ### Dial (signature)
 Front-view drawing of the selected architecture. Leader lines draw on (0.7s, exponential ease-out) when the architecture changes; this is the one authored motion and is disabled under reduced motion. Balloons turn red only for the date while the forbidden window is active.

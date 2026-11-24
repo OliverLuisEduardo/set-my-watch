@@ -22,8 +22,6 @@ interface Props {
   fusoGmtIndice?: number;
   aoMudarFusoGmt: (i: number) => void;
   telaAcesa: { suportado: boolean; ativo: boolean; alternar: () => void };
-  zero: boolean;
-  aoMudarZero: (z: boolean) => void;
 }
 
 const campo =
@@ -133,7 +131,6 @@ export function PainelAjustes(p: Props) {
         desabilitado={!p.telaAcesa.suportado}
         aoAlternar={p.telaAcesa.alternar}
       />
-      <Chave rotulo={t.posicaoZero} ajuda={t.posicaoZeroAjuda} ligado={p.zero} aoAlternar={() => p.aoMudarZero(!p.zero)} />
     </section>
   );
 }

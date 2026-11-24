@@ -9,7 +9,7 @@ related_targets: []
 
 Mode: Operate. Single screen; the whole app.
 
-Audience/job: enthusiast or watchmaker with the crown pulled, glancing from bench distance. Reads time, second, countdown to :00, forbidden-window state; touches rarely (architecture, theme, zone, movement, zero, keep-screen-on).
+Audience/job: enthusiast or watchmaker with the crown pulled, glancing from bench distance. Reads time, second, countdown to :00, forbidden-window state; touches rarely (architecture, theme, zone, movement, keep-screen-on).
 
 Owner decisions (2026-11-24): technical-sheet world chosen; two themes, Folha (light, default) and Bancada (pure black, high contrast); app opens on the simple watch (3 hands + date), richer architectures chosen below; the chosen sketch felt too boxy, so the build must be softer and less gridded than the sketch.
 

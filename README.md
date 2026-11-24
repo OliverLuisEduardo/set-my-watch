@@ -17,7 +17,7 @@ Mesmo padrão dos apps do [oliverops-apps](https://github.com/oliverluiseduardo/
 
 ### Motor
 
-- `tempo.ts`: decompõe a hora no fuso pedido via `Intl` (acerta o horário de verão). Fonte de tempo `ao-vivo`, `deslocada` (ex.: 2 min adiantado) ou `congelada` (posição zero).
+- `tempo.ts`: decompõe a hora no fuso pedido via `Intl` (acerta o horário de verão). Fonte de tempo `ao-vivo`, `deslocada` (ex.: 2 min adiantado) ou `congelada` (a interface usa só `ao-vivo`).
 - `angulos.ts`: ângulo de cada ponteiro e submostrador. O movimento define o passo do ponteiro de segundos: quartzo (1/s), mecânico de 21.600 (6/s) ou 28.800 alt/h (8/s), ou contínuo.
 - `calendario.ts`: bissexto gregoriano, dias no mês, ciclo L/+1/+2/+3 e fase da lua (mês sinódico médio).
 - `zonaProibida.ts`: faixa em que não se usa o passe rápido de data (padrão 21h–03h).
