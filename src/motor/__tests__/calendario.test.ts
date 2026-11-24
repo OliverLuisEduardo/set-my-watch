@@ -5,7 +5,7 @@ import {
   ehBissexto,
   fracaoLunar,
   idadeLunarDias,
-  nomeFaseLunar,
+  faseLunar,
   rotuloCicloBissexto,
 } from '../calendario';
 
@@ -66,11 +66,11 @@ describe('fase da lua', () => {
   });
 
   it('nomeia as fases nos limites', () => {
-    expect(nomeFaseLunar(0)).toBe('nova');
-    expect(nomeFaseLunar(0.98)).toBe('nova');
-    expect(nomeFaseLunar(0.25)).toBe('quarto crescente');
-    expect(nomeFaseLunar(0.5)).toBe('cheia');
-    expect(nomeFaseLunar(0.75)).toBe('quarto minguante');
+    expect(faseLunar(0)).toBe('nova');
+    expect(faseLunar(0.98)).toBe('nova');
+    expect(faseLunar(0.25)).toBe('quarto-crescente');
+    expect(faseLunar(0.5)).toBe('cheia');
+    expect(faseLunar(0.75)).toBe('quarto-minguante');
   });
 
   it('idade entre 0 e 29,53 dias', () => {

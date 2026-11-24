@@ -29,6 +29,24 @@
         ],
         "createdAt": "2026-11-24T20:05:31.835Z",
         "reason": "Claude: unchosen decision sketch in gitignored .impeccable/mocks, not shipped"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "17px",
+        "files": [
+          "src/index.css"
+        ],
+        "createdAt": "2026-11-24T20:57:33.872Z",
+        "reason": "Claude: SVG dial label sizes in viewBox units for phones (documented in DESIGN.md Layout), not page type"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "18px",
+        "files": [
+          "src/index.css"
+        ],
+        "createdAt": "2026-11-24T20:57:34.069Z",
+        "reason": "Claude: SVG dial label sizes in viewBox units for phones (documented in DESIGN.md Layout), not page type"
       }
     ]
   }

@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 @layer base {
-  /* Folha: filme de desenho fosco, frio (nunca creme), nanquim grafite. */
+  /* Claro: filme de desenho fosco, frio (nunca creme), nanquim grafite. */
   :root,
-  [data-tema='folha'] {
+  [data-tema='claro'] {
     --c-papel: 236 240 239;
     --c-folha: 246 248 247;
     --c-tinta: 20 24 27;
@@ -16,8 +16,8 @@
     color-scheme: light;
   }
 
-  /* Bancada: preto puro, traço branco, contraste máximo para ler de longe. */
-  [data-tema='bancada'] {
+  /* Escuro: preto puro, traço branco, contraste máximo para ler de longe. */
+  [data-tema='escuro'] {
     --c-papel: 0 0 0;
     --c-folha: 12 14 15;
     --c-tinta: 255 255 255;

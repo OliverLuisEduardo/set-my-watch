@@ -41,7 +41,8 @@ The screen speaks the watch's own language. Instead of a digital clock the user 
 - Engine already built and tested in `src/motor` and `src/hooks`: time source live/offset/frozen, time zones through `Intl` (DST-correct), hand angles per movement, Gregorian leap rule, L/+1/+2/+3 cycle, mean-synodic moon phase, forbidden window (default 21h–03h, per architecture), ms to next minute.
 - Generic architectures only: 3 hands + date, day-date, multifunction (day, date, 24h), perpetual calendar, GMT / second time zone. No brands, no model names, no reproduction of real branded dials.
 - Accuracy depends on the device's NTP-synced clock; the app does not correct it.
-- Interface language: Brazilian Portuguese.
+- Interface languages: Brazilian Portuguese, English and Spanish (`src/i18n`), detected from the browser and switchable in settings.
+- Quartz (1 step/s) is always the default movement; changing the dial type never changes the movement.
 
 ## Brand Commitments
 

@@ -1,8 +1,9 @@
 import type { Angulos } from '@/motor/angulos';
 import type { Arquitetura } from '@/motor/arquiteturas';
-import { fracaoLunar, nomeFaseLunar, rotuloCicloBissexto } from '@/motor/calendario';
+import type { Textos } from '@/i18n/textos';
+import { faseLunar, fracaoLunar, rotuloCicloBissexto } from '@/motor/calendario';
 import type { Instante } from '@/motor/tipos';
-import { DIAS_LONGOS, MESES_CURTOS, doisDigitos, horaTexto } from './textos';
+import { doisDigitos, horaTexto } from './textos';
 
 /** Posição de uma complicação no mostrador, como num desenho de calibre. */
 export type Posicao = 3 | 6 | 9 | 12;
@@ -57,38 +58,35 @@ interface Contexto {
 
 const LETRAS = 'ABCDEFG';
 
-export function itensLegenda(arquitetura: Arquitetura, { instante: i, epocaMs, gmt }: Contexto): ItemLegenda[] {
+export function itensLegenda(arquitetura: Arquitetura, { instante: i, epocaMs, gmt }: Contexto, t: Textos): ItemLegenda[] {
   const pecas = PECAS[arquitetura.id] ?? [];
+  const lua = t.fasesLua[faseLunar(fracaoLunar(epocaMs))];
   const itens: ItemLegenda[] = pecas.map((p, idx) => {
     const letra = LETRAS[idx];
     switch (p.tipo) {
       case 'janela-data':
       case 'sub-data':
-        return { letra, nome: 'Data', valor: doisDigitos(i.dia), sensivelZona: true };
+        return { letra, nome: t.legenda.data, valor: doisDigitos(i.dia), sensivelZona: true };
       case 'janela-dia':
       case 'sub-dia':
-        return { letra, nome: 'Dia da semana', valor: DIAS_LONGOS[i.diaSemana] };
+        return { letra, nome: t.legenda.diaSemana, valor: t.dias[i.diaSemana] };
       case 'sub-24h':
-        return { letra, nome: 'Indicador 24 h', valor: `${doisDigitos(i.hora)} h` };
+        return { letra, nome: t.legenda.indicador24, valor: `${doisDigitos(i.hora)} h` };
       case 'sub-mes':
-        return {
-          letra,
-          nome: 'Mês e ciclo bissexto',
-          valor: `${MESES_CURTOS[i.mes - 1]} · ${rotuloCicloBissexto(i.ano)}`,
-        };
+        return { letra, nome: t.legenda.mesCiclo, valor: `${t.meses[i.mes - 1]} · ${rotuloCicloBissexto(i.ano)}` };
       case 'gmt':
         return {
           letra,
-          nome: `Segundo fuso · ${gmt?.rotulo ?? ''}`,
+          nome: `${t.legenda.segundoFuso} · ${gmt?.rotulo ?? ''}`,
           valor: gmt ? horaTexto(gmt.instante.hora, gmt.instante.minuto) : '—',
         };
       case 'lua':
-        return { letra, nome: 'Fase da lua', valor: nomeFaseLunar(fracaoLunar(epocaMs)) };
+        return { letra, nome: t.legenda.faseLua, valor: lua };
     }
   });
 
   if (arquitetura.complicacoes.includes('fase-lua') && !pecas.some((p) => p.tipo === 'lua')) {
-    itens.push({ nome: 'Fase da lua', valor: nomeFaseLunar(fracaoLunar(epocaMs)) });
+    itens.push({ nome: t.legenda.faseLua, valor: lua });
   }
   return itens;
 }

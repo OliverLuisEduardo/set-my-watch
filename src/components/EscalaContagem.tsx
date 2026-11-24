@@ -1,3 +1,4 @@
+import { useTextos } from '@/i18n/contexto';
 import { quantizarMs } from '@/motor/angulos';
 import type { Instante, Movimento } from '@/motor/tipos';
 
@@ -13,6 +14,7 @@ interface Props {
  * O segundo :00 tem estado próprio: é o instante de soltar a coroa.
  */
 export function EscalaContagem({ instante, movimento, congelado }: Props) {
+  const t = useTextos();
   const s = instante.segundo + quantizarMs(instante.ms, movimento) / 1000;
   const soltar = !congelado && instante.segundo === 0;
   const faltam = 60 - instante.segundo;
@@ -23,7 +25,7 @@ export function EscalaContagem({ instante, movimento, congelado }: Props) {
     <div>
       <div className="flex items-end justify-between gap-4">
         <p className="pb-1 text-lg font-medium text-tinta-2">
-          {congelado ? 'Contagem parada' : soltar ? <strong key="agora" className="surgir text-2xl font-bold text-tinta">Solte a coroa agora</strong> : 'Solte a coroa no :00 em'}
+          {congelado ? t.contagem.parada : soltar ? <strong key="agora" className="surgir text-2xl font-bold text-tinta">{t.contagem.agora}</strong> : t.contagem.em}
         </p>
         <p
           className={`font-bold leading-none transition-[font-size] duration-300 ease-saida-expo ${

@@ -87,10 +87,10 @@ components:
 
 The whole screen is the front-view sheet of a watch service manual. The dial is drawn, not rendered: ink linework on drafting film, each complication named by a leader line that ends in a lettered balloon, and the same letters repeated in a legend beside it, the way a parts list sits beside a technical drawing. Everything a watchmaker needs to copy (hand positions, date, the second to release the crown) reads in a glance from bench distance.
 
-The system lives in two themes from one set of rules. **Folha** is cool matte drafting film for daylight and the bench lamp. **Bancada** is pure black with white ink for maximum contrast at a distance. Density is low and deliberate: one dial, one title block, one segmented control. Ornament is rejected outright: no imitation enamel, no bevels, no glow, no brand dials.
+The system lives in two themes from one set of rules. **Claro (light)** is cool matte drafting film for daylight and the bench lamp. **Escuro (dark)** is pure black with white ink for maximum contrast at a distance. Density is low and deliberate: one dial, one title block, one segmented control. Ornament is rejected outright: no imitation enamel, no bevels, no glow, no brand dials.
 
 **Key Characteristics:**
-- Dial as a technical drawing: two line weights, dashed construction lines, leader lines at 0°, 45° and 90° only.
+- Dial as a technical drawing: two line weights, leader lines at 0°, 45° and 90° only, nothing decorative on the face.
 - Lettered balloons on the dial mirrored one-to-one in the legend.
 - One condensed technical face with tabular figures for every role.
 - Red appears only for danger and for the beat of the seconds.
@@ -98,25 +98,25 @@ The system lives in two themes from one set of rules. **Folha** is cool matte dr
 
 ## Colors
 
-A restrained ink-on-film palette: neutrals carry almost everything, blue is only ever construction geometry, and red is reserved for revision (danger) and the seconds beat.
+A restrained ink-on-film palette: neutrals carry almost everything, blue is only the keyboard focus, and red is reserved for revision (danger) and the seconds beat.
 
 ### Primary
 - **Drafting Ink** (folha-ink / bancada-ink): every line, numeral and solid hand; the selection ring on controls.
 
 ### Secondary
-- **Non-Photo Construction Blue** (folha-construction / bancada-construction): dashed construction axes, the subdial pitch circle, the calm hatching of the forbidden window, and the focus outline. Never text, never fill.
+- **Non-Photo Construction Blue** (folha-construction / bancada-construction): the keyboard focus outline only. Never text, never fill, never drawn on the dial.
 
 ### Tertiary
 - **Revision Pencil Red** (folha-revision / bancada-revision): the seconds hand, the countdown pointer, the date marking and hatching while the forbidden window is active, and the danger plate.
 
 ### Neutral
-- **Cool Drafting Film** (folha-ground): page ground in Folha; deliberately cool, never cream.
+- **Cool Drafting Film** (folha-ground): page ground in the light theme; deliberately cool, never cream.
 - **Film Highlight** (folha-surface): dial face, settings panel, selected segment.
 - **Graphite Secondary** (folha-ink-secondary): seconds digits, labels, secondary legend text (≥4.5:1 on the ground).
-- **Pure Black** (bancada-ground) and **Bench Surface** (bancada-surface): the Bancada equivalents.
+- **Pure Black** (bancada-ground) and **Bench Surface** (bancada-surface): the dark-theme equivalents.
 
 ### Named Rules
-**The Revision Rule.** Red means "the movement can be hurt" or "this is the beat". Anything calm is ink or construction blue; the forbidden-window hatch is blue until the zone is active.
+**The Revision Rule.** Red means "the movement can be hurt" or "this is the beat". Anything calm is ink or construction blue; the forbidden-window hatch is drawn only while the zone is active.
 
 **The One Plate Rule.** The danger plate is the only reversed element on screen. Selection is never shown by ink reversal.
 
@@ -149,7 +149,7 @@ Below 640px, small SVG labels scale up (subdial labels to 17 units, GMT ring to 
 Flat by design. There are no shadows anywhere; depth is drawn the way a technical sheet draws it, with line weight, hatching and tone. The dial face sits on a slightly lighter surface than the ground, and that is the only layering.
 
 ### Named Rules
-**The Two Weights Rule.** Linework uses exactly two weights: heavy (2.6) for the case, hour indices, main and subdial hands and the seconds hand; fine (1.1) for leaders, construction, minute ticks and subdial rings.
+**The Two Weights Rule.** Linework uses exactly two weights: heavy (2.6) for the case, hour indices, main and subdial hands and the seconds hand; fine (1.1) for leaders, minute ticks and subdial rings.
 
 ## Shapes
 
@@ -168,7 +168,7 @@ Drafting-template corners: containers round at 0.875rem, controls at 0.625rem, b
 - **Focus:** 2px construction-blue outline, 3px offset, following the control's own corner.
 
 ### Navigation
-- Top toolbar: wordmark left; theme (Folha/Bancada), Posição zero, Tela acesa, Ajustes right. Labels hide on phones but stay as accessible names. Ajustes opens an inline settings panel (movement, reference zone, GMT second zone).
+- Top bar: wordmark left, a single Settings button right. Every option lives in one inline settings panel: theme (light/dark), language (pt-BR, en, es), movement (quartz by default), reference zone, GMT second zone, keep-screen-on and zero-position switches.
 
 ### Dial (signature)
 Front-view drawing of the selected architecture. Leader lines draw on (0.7s, exponential ease-out) when the architecture changes; this is the one authored motion and is disabled under reduced motion. Balloons turn red only for the date while the forbidden window is active.
@@ -186,11 +186,11 @@ Revision-red plate with a drawn revision delta, a title and the recovery instruc
 - **Do** keep linework at the two weights (2.6 and 1.1).
 - **Do** use tabular figures for every number that changes.
 - **Do** keep red for danger and the seconds beat; calm states use ink or construction blue.
-- **Do** design both themes for every change; Bancada is pure black, not dark gray.
+- **Do** design both themes (light and dark) for every change; dark is pure black, not dark gray.
 
 ### Don't:
 - **Don't** imitate branded dials or real watch models.
 - **Don't** add ornament: no enamel textures, bevels, gradients, glow or skeuomorphic cases.
-- **Don't** use neon-on-black "gamer" styling in Bancada.
+- **Don't** use neon-on-black "gamer" styling in the dark theme.
 - **Don't** mark selection by inverting ink; the danger plate owns reversal.
 - **Don't** box information into cells; divide with hairlines.

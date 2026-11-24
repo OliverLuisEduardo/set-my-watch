@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Crosshair, Eye, Moon, SlidersHorizontal, Sun } from 'lucide-react';
+import { SlidersHorizontal, X } from 'lucide-react';
 import { AvisoZona } from '@/components/AvisoZona';
 import { EscalaContagem } from '@/components/EscalaContagem';
-import { Legenda } from '@/components/Legenda';
+import { HoraReferencia, Legenda } from '@/components/Legenda';
 import { Mostrador } from '@/components/Mostrador';
+import { MOVIMENTOS, PainelAjustes, type Tema } from '@/components/PainelAjustes';
 import { SeletorArquitetura } from '@/components/SeletorArquitetura';
 import { usePreferencia } from '@/hooks/usePreferencia';
 import { useRelogio } from '@/hooks/useRelogio';
 import { useWakeLock } from '@/hooks/useWakeLock';
+import { ContextoTextos } from '@/i18n/contexto';
+import { IDIOMAS, TEXTOS, idiomaDoNavegador, type Idioma } from '@/i18n/textos';
 import { ARQUITETURAS } from '@/motor/arquiteturas';
 import { fracaoLunar } from '@/motor/calendario';
 import { FUSOS_RAPIDOS } from '@/motor/fusos';
@@ -15,43 +18,38 @@ import { POSICAO_ZERO, fusoDoSistema } from '@/motor/tempo';
 import type { FonteTempo, Movimento } from '@/motor/tipos';
 import { naZonaProibida } from '@/motor/zonaProibida';
 import { itensLegenda } from '@/ui/legenda';
-import { doisDigitos } from '@/ui/textos';
+import { doisDigitos, horaTexto } from '@/ui/textos';
 
-type Tema = 'folha' | 'bancada';
-
-const MOVIMENTOS: { rotulo: string; valor: Movimento }[] = [
-  { rotulo: 'Quartzo · 1 passo/s', valor: 1 },
-  { rotulo: 'Mecânico 21.600 alt/h · 6 passos/s', valor: 6 },
-  { rotulo: 'Mecânico 28.800 alt/h · 8 passos/s', valor: 8 },
-  { rotulo: 'Varredura contínua', valor: 'continuo' },
-];
-
-const ehTema = (v: unknown): v is Tema => v === 'folha' || v === 'bancada';
+const ehTema = (v: unknown): v is Tema => v === 'claro' || v === 'escuro';
+const ehIdioma = (v: unknown): v is Idioma => IDIOMAS.some((i) => i.id === v);
 const ehArquitetura = (v: unknown): v is string => ARQUITETURAS.some((a) => a.id === v);
-const ehMovimento = (v: unknown): v is Movimento => MOVIMENTOS.some((m) => m.valor === v);
+const ehMovimento = (v: unknown): v is Movimento => MOVIMENTOS.some((m) => m === v);
 const ehIndiceFuso = (v: unknown): v is number => typeof v === 'number' && v >= 0 && v < FUSOS_RAPIDOS.length;
 
-const rotuloFuso = (indice: number) => FUSOS_RAPIDOS[indice].fuso ?? `Local (${fusoDoSistema().replace(/_/g, ' ')})`;
-
-const campo =
-  'min-h-11 w-full rounded-[0.625rem] border border-tinta/60 bg-folha px-3 text-base text-tinta hover:border-tinta';
-
 export default function App() {
-  const [tema, setTema] = usePreferencia<Tema>('tema', 'folha', ehTema);
+  const [tema, setTema] = usePreferencia<Tema>('tema', 'claro', ehTema);
+  const [idioma, setIdioma] = usePreferencia<Idioma>('idioma', idiomaDoNavegador(), ehIdioma);
   const [arquiteturaId, setArquiteturaId] = usePreferencia('arquitetura', ARQUITETURAS[0].id, ehArquitetura);
-  const [movimento, setMovimento] = usePreferencia<Movimento>('movimento', ARQUITETURAS[0].movimento, ehMovimento);
+  // Quartzo é sempre o padrão; trocar o tipo de mostrador não mexe no movimento.
+  const [movimento, setMovimento] = usePreferencia<Movimento>('movimento-v2', 1, ehMovimento);
   const [fusoIndice, setFusoIndice] = usePreferencia('fuso', 0, ehIndiceFuso);
   const [fusoGmtIndice, setFusoGmtIndice] = usePreferencia('fuso-gmt', 1, ehIndiceFuso);
   const [zero, setZero] = useState(false);
   const [ajustesAbertos, setAjustesAbertos] = useState(false);
 
+  const t = TEXTOS[idioma];
   const arquitetura = ARQUITETURAS.find((a) => a.id === arquiteturaId) ?? ARQUITETURAS[0];
   const ehGmt = arquitetura.complicacoes.includes('gmt');
 
   useEffect(() => {
     document.documentElement.dataset.tema = tema;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', tema === 'bancada' ? '#000000' : '#ECF0EF');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', tema === 'escuro' ? '#000000' : '#ECF0EF');
   }, [tema]);
+
+  useEffect(() => {
+    document.documentElement.lang = idioma;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t.descricao);
+  }, [idioma, t]);
 
   const fonte = useMemo<FonteTempo>(
     () => (zero ? { tipo: 'congelada', instante: POSICAO_ZERO } : { tipo: 'ao-vivo' }),
@@ -61,132 +59,89 @@ export default function App() {
   const relogioGmt = useRelogio({ fonte, movimento, fuso: FUSOS_RAPIDOS[fusoGmtIndice].fuso });
   const telaAcesa = useWakeLock();
 
-  const { instante, angulos, epocaMs } = relogio;
-  const perigo = !zero && naZonaProibida(instante.hora, arquitetura.zonaProibida);
+  const { instante: i, angulos, epocaMs } = relogio;
+  const perigo = !zero && naZonaProibida(i.hora, arquitetura.zonaProibida);
   const gmt = ehGmt
-    ? { instante: relogioGmt.instante, angulos: relogioGmt.angulos, rotulo: FUSOS_RAPIDOS[fusoGmtIndice].rotulo }
+    ? { instante: relogioGmt.instante, angulos: relogioGmt.angulos, rotulo: t.fusos[FUSOS_RAPIDOS[fusoGmtIndice].id] }
     : undefined;
-  const itens = itensLegenda(arquitetura, { instante, epocaMs, gmt });
+  const itens = itensLegenda(arquitetura, { instante: i, epocaMs, gmt }, t);
 
-  const escolherArquitetura = (id: string) => {
-    const nova = ARQUITETURAS.find((a) => a.id === id) ?? ARQUITETURAS[0];
-    setArquiteturaId(nova.id);
-    setMovimento(nova.movimento);
-  };
-
-  const botaoBarra = (ativo: boolean) =>
-    `inline-flex min-h-11 items-center gap-2 rounded-[0.625rem] px-2.5 text-base sm:px-3 font-semibold transition-colors duration-200 ease-saida-expo ${
-      ativo ? 'bg-folha font-bold ring-[1.5px] ring-inset ring-tinta' : 'text-tinta hover:bg-tinta/10'
-    }`;
+  const fusoAtual = FUSOS_RAPIDOS[fusoIndice];
+  const nomeFuso = fusoAtual.fuso ?? `${t.fusos.local} (${fusoDoSistema().replace(/_/g, ' ')})`;
+  const dataLonga = `${t.dataLonga(t.dias[i.diaSemana], i.dia, t.meses[i.mes - 1], i.ano)} · ${nomeFuso}`;
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-[1600px] flex-col px-4 pb-8 sm:px-8 lg:px-12">
-      <header className="flex flex-wrap items-center gap-x-1 gap-y-2 py-3 sm:gap-x-4 sm:py-4">
-        <h1 className="mr-auto text-lg font-bold tracking-[0.01em] sm:text-2xl">SetMyWatch</h1>
-
-        <div role="radiogroup" aria-label="Tema" className="flex rounded-gabarito bg-tinta/[0.06] p-0.5 sm:p-1">
-          {(['folha', 'bancada'] as const).map((t) => (
-            <button key={t} type="button" role="radio" aria-checked={tema === t} onClick={() => setTema(t)} className={botaoBarra(tema === t)}>
-              {t === 'folha' ? <Sun className="size-5" strokeWidth={1.8} aria-hidden="true" /> : <Moon className="size-5" strokeWidth={1.8} aria-hidden="true" />}
-              <span className="max-sm:sr-only">{t === 'folha' ? 'Folha' : 'Bancada'}</span>
-            </button>
-          ))}
-        </div>
-
-        <button type="button" aria-pressed={zero} onClick={() => setZero((z) => !z)} className={botaoBarra(zero)}>
-          <Crosshair className="size-5" strokeWidth={1.8} aria-hidden="true" />
-          <span className="max-sm:sr-only">Posição zero</span>
-        </button>
-
-        {telaAcesa.suportado && (
+    <ContextoTextos.Provider value={t}>
+      <div className="mx-auto flex min-h-dvh max-w-[1600px] flex-col px-4 pb-8 sm:px-8 lg:px-12">
+        <header className="flex items-center gap-4 py-3 sm:py-4">
+          <h1 className="mr-auto text-xl font-bold tracking-[0.01em] sm:text-2xl">SetMyWatch</h1>
           <button
             type="button"
-            aria-pressed={telaAcesa.ativo}
-            onClick={() => (telaAcesa.ativo ? telaAcesa.desativar() : telaAcesa.ativar())}
-            className={botaoBarra(telaAcesa.ativo)}
+            aria-expanded={ajustesAbertos}
+            aria-controls="ajustes"
+            onClick={() => setAjustesAbertos((a) => !a)}
+            className={`inline-flex min-h-11 items-center gap-2 rounded-[0.625rem] px-3 text-base font-semibold transition-colors duration-200 ease-saida-expo ${
+              ajustesAbertos ? 'bg-folha font-bold ring-[1.5px] ring-inset ring-tinta' : 'hover:bg-tinta/10'
+            }`}
           >
-            <Eye className="size-5" strokeWidth={1.8} aria-hidden="true" />
-            <span className="max-sm:sr-only">Tela acesa</span>
+            {ajustesAbertos ? <X className="size-5" strokeWidth={1.8} aria-hidden="true" /> : <SlidersHorizontal className="size-5" strokeWidth={1.8} aria-hidden="true" />}
+            {ajustesAbertos ? t.fecharAjustes : t.ajustes}
           </button>
+        </header>
+
+        {ajustesAbertos && (
+          <PainelAjustes
+            tema={tema}
+            aoMudarTema={setTema}
+            idioma={idioma}
+            aoMudarIdioma={setIdioma}
+            movimento={movimento}
+            aoMudarMovimento={setMovimento}
+            fusoIndice={fusoIndice}
+            aoMudarFuso={setFusoIndice}
+            fusoGmtIndice={ehGmt ? fusoGmtIndice : undefined}
+            aoMudarFusoGmt={setFusoGmtIndice}
+            telaAcesa={{
+              suportado: telaAcesa.suportado,
+              ativo: telaAcesa.ativo,
+              alternar: () => void (telaAcesa.ativo ? telaAcesa.desativar() : telaAcesa.ativar()),
+            }}
+            zero={zero}
+            aoMudarZero={setZero}
+          />
         )}
 
-        <button
-          type="button"
-          aria-expanded={ajustesAbertos}
-          aria-controls="ajustes"
-          onClick={() => setAjustesAbertos((a) => !a)}
-          className={botaoBarra(ajustesAbertos)}
-        >
-          <SlidersHorizontal className="size-5" strokeWidth={1.8} aria-hidden="true" />
-          <span className="max-sm:sr-only">Ajustes</span>
-        </button>
-      </header>
+        <main className="grid flex-1 items-start gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)]">
+          <section aria-label={t.arquitetura} className="lg:col-start-1 lg:row-start-1">
+            <div className="mx-auto aspect-[500/444] w-full max-w-[min(100%,calc((100dvh-13rem)*500/444))]">
+              <Mostrador
+                arquitetura={arquitetura}
+                instante={i}
+                angulos={angulos}
+                itens={itens}
+                perigo={perigo}
+                gmt={gmt}
+                fracaoLua={fracaoLunar(epocaMs)}
+                rotuloAcessivel={t.mostrador(t.arquiteturas[arquitetura.id].nome, horaTexto(i.hora, i.minuto, i.segundo), i.dia)}
+              />
+            </div>
+          </section>
 
-      {ajustesAbertos && (
-        <section id="ajustes" aria-label="Ajustes" className="surgir mb-4 grid gap-4 rounded-gabarito bg-folha p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <label className="grid gap-1.5">
-            <span className="text-base text-tinta-2">Movimento</span>
-            <select className={campo} value={String(movimento)} onChange={(e) => setMovimento(MOVIMENTOS.find((m) => String(m.valor) === e.target.value)!.valor)}>
-              {MOVIMENTOS.map((m) => (
-                <option key={m.valor} value={String(m.valor)}>{m.rotulo}</option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-1.5">
-            <span className="text-base text-tinta-2">Fuso de referência</span>
-            <select className={campo} value={fusoIndice} onChange={(e) => setFusoIndice(Number(e.target.value))}>
-              {FUSOS_RAPIDOS.map((f, idx) => (
-                <option key={f.rotulo} value={idx}>{f.rotulo}</option>
-              ))}
-            </select>
-          </label>
-          {ehGmt && (
-            <label className="grid gap-1.5">
-              <span className="text-base text-tinta-2">Segundo fuso (ponteiro GMT)</span>
-              <select className={campo} value={fusoGmtIndice} onChange={(e) => setFusoGmtIndice(Number(e.target.value))}>
-                {FUSOS_RAPIDOS.map((f, idx) => (
-                  <option key={f.rotulo} value={idx}>{f.rotulo}</option>
-                ))}
-              </select>
-            </label>
-          )}
-        </section>
-      )}
+          {/* Ordem de leitura na bancada: hora, perigo, contagem, estado da data, peças do mostrador. */}
+          <aside className="flex flex-col gap-7 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:pt-6">
+            <HoraReferencia hora={doisDigitos(i.hora)} minuto={doisDigitos(i.minuto)} segundo={doisDigitos(i.segundo)} data={dataLonga} />
+            {perigo && <AvisoZona zona={arquitetura.zonaProibida} ativa congelado={false} />}
+            <EscalaContagem instante={i} movimento={movimento} congelado={zero} />
+            {!perigo && <AvisoZona zona={arquitetura.zonaProibida} ativa={false} congelado={zero} />}
+            <Legenda itens={itens} perigo={perigo} />
+          </aside>
 
-      <main className="grid flex-1 items-start gap-x-14 gap-y-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)]">
-        <section aria-label="Mostrador" className="lg:col-start-1 lg:row-start-1">
-          <div className="mx-auto aspect-[500/444] w-full max-w-[min(100%,calc((100dvh-12rem)*500/444))]">
-            <Mostrador
-              arquitetura={arquitetura}
-              instante={instante}
-              angulos={angulos}
-              itens={itens}
-              perigo={perigo}
-              gmt={gmt}
-              fracaoLua={fracaoLunar(epocaMs)}
-              rotuloAcessivel={`Mostrador ${arquitetura.nome}: ${doisDigitos(instante.hora)}:${doisDigitos(instante.minuto)}:${doisDigitos(instante.segundo)}, dia ${instante.dia}`}
-            />
+          {/* Embaixo do mostrador no desktop; no celular vem por último, depois da hora e da contagem. */}
+          <div className="lg:col-start-1 lg:row-start-2">
+            <SeletorArquitetura valor={arquitetura.id} aoMudar={setArquiteturaId} />
           </div>
-        </section>
-
-        <aside aria-label="Legenda" className="flex flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:pt-6">
-          {/* Na zona proibida, o aviso sobe para logo abaixo da hora: tem de caber na primeira tela do celular. */}
-          <Legenda
-            instante={instante}
-            rotuloFuso={rotuloFuso(fusoIndice)}
-            itens={itens}
-            perigo={perigo}
-            depoisDaHora={perigo ? <AvisoZona zona={arquitetura.zonaProibida} ativa congelado={false} /> : undefined}
-          />
-          <EscalaContagem instante={instante} movimento={movimento} congelado={zero} />
-          {!perigo && <AvisoZona zona={arquitetura.zonaProibida} ativa={false} congelado={zero} />}
-        </aside>
-
-        {/* No celular fica por último: é tocado raramente. */}
-        <div className="lg:col-start-1 lg:row-start-2">
-          <SeletorArquitetura valor={arquitetura.id} aoMudar={escolherArquitetura} />
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </ContextoTextos.Provider>
   );
 }

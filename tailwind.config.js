@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 // Folha técnica de calibre. As cores vêm das variáveis de tema em index.css
-// (data-tema="folha" | "bancada"), então cada classe serve aos dois temas.
+// (data-tema="claro" | "escuro"), então cada classe serve aos dois temas.
 const cor = (nome) => `rgb(var(--c-${nome}) / <alpha-value>)`;
 
 export default {

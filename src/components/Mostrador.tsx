@@ -4,7 +4,9 @@ import type { Arquitetura } from '@/motor/arquiteturas';
 import { rotuloCicloBissexto } from '@/motor/calendario';
 import type { Instante, ZonaProibida } from '@/motor/tipos';
 import { PECAS, type ItemLegenda, type Peca, type Posicao } from '@/ui/legenda';
-import { DIAS_CURTOS, DIAS_INICIAIS, MESES_INICIAIS, doisDigitos } from '@/ui/textos';
+import { useTextos } from '@/i18n/contexto';
+import type { Textos } from '@/i18n/textos';
+import { doisDigitos } from '@/ui/textos';
 
 interface Props {
   arquitetura: Arquitetura;
@@ -26,7 +28,7 @@ const FINA = 1.1;
 const R = 180;
 const DIST_SUB = 92;
 const R_SUB = 42;
-const LUA = { r: 110, angulo: 225, raio: 15 };
+const LUA = { r: 110, angulo: 225, raio: 18, disco: 12 };
 
 /** Ponto polar com 0° no topo, sentido horário. */
 function polar(r: number, graus: number): [number, number] {
@@ -147,7 +149,7 @@ function Submostrador({
   );
 }
 
-function desenharPeca(peca: Peca, p: Props, perigoData: boolean, zona: ZonaProibida) {
+function desenharPeca(peca: Peca, p: Props, perigoData: boolean, zona: ZonaProibida, t: Textos) {
   const { instante: i, angulos: a } = p;
   switch (peca.tipo) {
     case 'janela-data':
@@ -164,7 +166,7 @@ function desenharPeca(peca: Peca, p: Props, perigoData: boolean, zona: ZonaProib
         <g>
           <rect x={-34} y={-133} width={68} height={30} rx={4} fill="none" className="stroke-tinta" strokeWidth={PESADA} />
           <text x={0} y={-118} dy="0.36em" textAnchor="middle" fontSize={17} fontWeight={700} letterSpacing="0.08em" className="fill-tinta">
-            {DIAS_CURTOS[i.diaSemana].toUpperCase()}
+            {t.diasCurtos[i.diaSemana]}
           </text>
         </g>
       );
@@ -173,7 +175,7 @@ function desenharPeca(peca: Peca, p: Props, perigoData: boolean, zona: ZonaProib
         <Submostrador
           posicao={peca.posicao}
           divisoes={7}
-          rotulos={DIAS_INICIAIS.map((texto, indice) => ({ indice, texto }))}
+          rotulos={t.diasIniciais.map((texto, indice) => ({ indice, texto }))}
           angulo={a.diaSemana}
         />
       );
@@ -195,14 +197,10 @@ function desenharPeca(peca: Peca, p: Props, perigoData: boolean, zona: ZonaProib
           rotulos={[0, 6, 12, 18].map((indice) => ({ indice, texto: indice === 0 ? '24' : String(indice) }))}
           angulo={a.hora24}
         >
-          {/* Hachura da zona proibida, na posição em que ela acontece */}
-          {/* Vermelha só com a zona ativa; fora dela, em azul de construção */}
-          <path
-            d={setor(R_SUB - 8, R_SUB, zona.inicio * 15, zona.fim * 15)}
-            fill={p.perigo ? 'url(#hachura)' : 'url(#hachura-calma)'}
-            className={p.perigo ? 'stroke-revisao' : 'stroke-construcao'}
-            strokeWidth={FINA}
-          />
+          {/* Hachura da zona proibida na posição em que ela acontece, só com a zona ativa */}
+          {p.perigo && (
+            <path d={setor(R_SUB - 8, R_SUB, zona.inicio * 15, zona.fim * 15)} fill="url(#hachura)" className="stroke-revisao" strokeWidth={FINA} />
+          )}
         </Submostrador>
       );
     case 'sub-mes':
@@ -210,7 +208,7 @@ function desenharPeca(peca: Peca, p: Props, perigoData: boolean, zona: ZonaProib
         <Submostrador
           posicao={peca.posicao}
           divisoes={12}
-          rotulos={MESES_INICIAIS.map((texto, indice) => ({ indice, texto, extra: indice % 3 !== 0 }))}
+          rotulos={t.mesesIniciais.map((texto, indice) => ({ indice, texto, extra: indice % 3 !== 0 }))}
           angulo={a.mes}
         >
           <text y={16} dy="0.35em" textAnchor="middle" fontSize={12} fontWeight={700} className="rotulo-sub fill-tinta">
@@ -222,10 +220,11 @@ function desenharPeca(peca: Peca, p: Props, perigoData: boolean, zona: ZonaProib
       const [cx, cy] = polar(LUA.r, LUA.angulo);
       return (
         <g transform={`translate(${cx} ${cy})`}>
-          {/* Lado escuro hachurado (convenção de sombra do desenho); lado iluminado liso */}
+          {/* Janela com céu hachurado; a parte iluminada do disco aparece lisa e contornada */}
           <circle r={LUA.raio} fill="url(#sombra)" />
-          <path d={caminhoLua(p.fracaoLua, LUA.raio)} className="fill-folha" />
-          <circle r={LUA.raio} fill="none" className="stroke-tinta" strokeWidth={FINA} />
+          <circle r={LUA.raio} fill="none" className="stroke-tinta" strokeWidth={PESADA} />
+          <circle r={LUA.disco} className="fill-folha stroke-tinta" strokeWidth={FINA} opacity={0.35} />
+          <path d={caminhoLua(p.fracaoLua, LUA.disco)} className="fill-folha stroke-tinta" strokeWidth={FINA} />
         </g>
       );
     }
@@ -259,9 +258,9 @@ function desenharPeca(peca: Peca, p: Props, perigoData: boolean, zona: ZonaProib
 /** Mostrador analógico como vista frontal de desenho técnico. */
 export function Mostrador(props: Props) {
   const { arquitetura, angulos: a, itens, perigo, rotuloAcessivel } = props;
+  const t = useTextos();
   const pecas = PECAS[arquitetura.id] ?? [];
   const ocupadas = new Set<Posicao>(pecas.flatMap((p) => ('posicao' in p ? [p.posicao] : [])));
-  const temSub = pecas.some((p) => p.tipo.startsWith('sub-'));
 
   return (
     <svg viewBox="-250 -222 500 444" role="img" aria-label={rotuloAcessivel} className="h-full w-full select-none">
@@ -269,20 +268,10 @@ export function Mostrador(props: Props) {
         <pattern id="hachura" width={5} height={5} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <line x1={0} y1={0} x2={0} y2={5} className="stroke-revisao" strokeWidth={FINA} />
         </pattern>
-        <pattern id="hachura-calma" width={5} height={5} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <line x1={0} y1={0} x2={0} y2={5} className="stroke-construcao" strokeWidth={FINA} />
-        </pattern>
         <pattern id="sombra" width={4} height={4} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <line x1={0} y1={0} x2={0} y2={4} className="stroke-tinta" strokeWidth={FINA} />
         </pattern>
       </defs>
-
-      {/* Linhas de construção */}
-      <g className="stroke-construcao" strokeWidth={FINA} strokeDasharray="6 4" opacity={0.7}>
-        <line x1={-244} x2={244} y1={0} y2={0} />
-        <line x1={0} x2={0} y1={-216} y2={216} />
-        {temSub && <circle r={DIST_SUB} fill="none" />}
-      </g>
 
       {/* Caixa e trilho de minutos */}
       <circle r={R + 7} fill="none" className="stroke-tinta" strokeWidth={FINA} />
@@ -307,7 +296,7 @@ export function Mostrador(props: Props) {
       {/* Complicações: desenhadas de novo ao trocar de arquitetura */}
       <g key={arquitetura.id} className="surgir">
         {pecas.map((peca, idx) => (
-          <g key={idx}>{desenharPeca(peca, props, perigo && itens[idx]?.sensivelZona === true, arquitetura.zonaProibida)}</g>
+          <g key={idx}>{desenharPeca(peca, props, perigo && itens[idx]?.sensivelZona === true, arquitetura.zonaProibida, t)}</g>
         ))}
         {pecas.map((peca, idx) => {
           const { pontos, balao } = chamada(peca);

@@ -1,4 +1,5 @@
 import { CircleCheck, Crosshair } from 'lucide-react';
+import { useTextos } from '@/i18n/contexto';
 import type { ZonaProibida } from '@/motor/tipos';
 import { doisDigitos } from '@/ui/textos';
 
@@ -20,6 +21,7 @@ function DeltaRevisao() {
 
 /** Estado do passe rápido de data. Só a zona proibida ativa vira placa invertida. */
 export function AvisoZona({ zona, ativa, congelado }: Props) {
+  const t = useTextos();
   const ini = `${doisDigitos(zona.inicio)}:00`;
   const fim = `${doisDigitos(zona.fim)}:00`;
 
@@ -28,8 +30,7 @@ export function AvisoZona({ zona, ativa, congelado }: Props) {
       <div className="flex items-start gap-3 rounded-gabarito border border-tinta/40 px-4 py-3">
         <Crosshair className="mt-0.5 size-5 shrink-0" strokeWidth={1.8} aria-hidden="true" />
         <p className="text-base leading-snug">
-          <strong className="font-semibold">Posição zero.</strong> Ponteiros travados em 12:00:00, domingo, dia 1, janeiro.
-          Alinhe os ponteiros do relógio a eles.
+          <strong className="font-semibold">{t.zona.zeroTitulo}</strong> {t.zona.zeroTexto}
         </p>
       </div>
     );
@@ -40,8 +41,8 @@ export function AvisoZona({ zona, ativa, congelado }: Props) {
       <div role="alert" className="surgir flex items-start gap-3 rounded-gabarito bg-revisao px-4 py-3 text-revisao-texto">
         <DeltaRevisao />
         <p className="text-base leading-snug">
-          <strong className="block text-xl font-bold">Zona proibida: não use o passe rápido da data</strong>
-          Entre {ini} e {fim} a engrenagem da data está engatada. Avance a data pelos ponteiros, girando além da meia-noite.
+          <strong className="block text-xl font-bold">{t.zona.titulo}</strong>
+          {t.zona.texto(ini, fim)}
         </p>
       </div>
     );
@@ -51,7 +52,7 @@ export function AvisoZona({ zona, ativa, congelado }: Props) {
     <div className="flex items-center gap-3 px-1">
       <CircleCheck className="size-5 shrink-0" strokeWidth={1.8} aria-hidden="true" />
       <p className="text-base">
-        Passe rápido da data liberado até <strong className="font-semibold">{ini}</strong>
+        {t.zona.liberado} <strong className="font-semibold">{ini}</strong>
       </p>
     </div>
   );
