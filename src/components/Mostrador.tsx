@@ -29,6 +29,8 @@ const R = 180;
 const DIST_SUB = 92;
 const R_SUB = 42;
 const LUA = { r: 110, angulo: 225, raio: 18, disco: 12 };
+/** Aro externo de 24 h do mostrador GMT, em volta da caixa. */
+const ARO = { interno: R + 7, externo: 214, rotulos: 201 };
 
 /** Ponto polar com 0° no topo, sentido horário. */
 function polar(r: number, graus: number): [number, number] {
@@ -57,9 +59,9 @@ function diagonalAteBalao(x0: number, y0: number, lado: 1 | -1, vertical: 1 | -1
  * Linha de chamada só em 0°, 45° e 90°, terminando num balão com a letra,
  * como nas vistas de um desenho de calibre.
  */
-function chamada(peca: Peca): { pontos: string; balao: [number, number] } {
+function chamada(peca: Peca, comAro: boolean): { pontos: string; balao: [number, number] } {
   if (peca.tipo === 'gmt') {
-    const [x, y] = polar(128, 225);
+    const [x, y] = polar(ARO.externo, 225);
     return diagonalAteBalao(x, y, -1, 1);
   }
   if (peca.tipo === 'lua') {
@@ -70,6 +72,9 @@ function chamada(peca: Peca): { pontos: string; balao: [number, number] } {
   switch (peca.posicao) {
     case 3: {
       const x0 = janela ? 150 : DIST_SUB + R_SUB;
+      // Com o aro de 24 h, o balão sai para fora do aro.
+      // Sai em 45° para cruzar o aro entre o 4 e o 6, sem passar sobre um número.
+      if (comAro) return { pontos: `${x0},-16 ${x0 + 60},-76 222,-76`, balao: [236, -76] };
       return { pontos: `${x0},0 206,0`, balao: [220, 0] };
     }
     case 9:
@@ -230,27 +235,13 @@ function desenharPeca(peca: Peca, p: Props, perigoData: boolean, zona: ZonaProib
     }
     case 'gmt':
       return (
-        <g>
-          <circle r={128} fill="none" className="stroke-tinta" strokeWidth={FINA} />
-          {Array.from({ length: 12 }, (_, k) => (k + 1) * 2)
-            // O 6 cairia dentro da janela da data às 3h.
-            .filter((h) => h !== 6)
-            .map((h) => {
-              // Por dentro do anel: a ponta da seta (r 116–138) passa por fora, sem cobrir o número.
-              const [x, y] = polar(100, h * 15);
-              return (
-                <text key={h} x={x} y={y} dy="0.35em" textAnchor="middle" fontSize={14} fontWeight={600} className="rotulo-gmt fill-tinta-2">
-                  {h}
-                </text>
-              );
-            })}
-          {p.gmt && (
-            <g transform={`rotate(${p.gmt.angulos.hora24})`}>
-              <line y1={0} y2={-116} className="stroke-tinta" strokeWidth={FINA} />
-              <path d="M 0 -138 L -8 -116 L 8 -116 Z" className="fill-folha stroke-tinta" strokeWidth={PESADA} strokeLinejoin="round" />
-            </g>
-          )}
-        </g>
+        // Ponteiro GMT: haste fina e ponta cheia que encosta no aro de 24 h, sem cobrir o número.
+        p.gmt ? (
+          <g transform={`rotate(${p.gmt.angulos.hora24})`}>
+            <line y1={0} y2={-172} className="stroke-tinta" strokeWidth={FINA} />
+            <path d={`M 0 ${-ARO.interno} L -7 -169 L 7 -169 Z`} className="fill-tinta stroke-tinta" strokeWidth={FINA} strokeLinejoin="round" />
+          </g>
+        ) : null
       );
   }
 }
@@ -261,6 +252,7 @@ export function Mostrador(props: Props) {
   const t = useTextos();
   const pecas = PECAS[arquitetura.id] ?? [];
   const ocupadas = new Set<Posicao>(pecas.flatMap((p) => ('posicao' in p ? [p.posicao] : [])));
+  const comAro = pecas.some((p) => p.tipo === 'gmt');
 
   return (
     <svg viewBox="-250 -222 500 444" role="img" aria-label={rotuloAcessivel} className="h-full w-full select-none">
@@ -272,6 +264,26 @@ export function Mostrador(props: Props) {
           <line x1={0} y1={0} x2={0} y2={4} className="stroke-tinta" strokeWidth={FINA} />
         </pattern>
       </defs>
+
+      {/* Aro de 24 h do GMT, por fora da caixa, como num relógio de segundo fuso */}
+      {comAro && (
+        <g key="aro" className="surgir">
+          <circle r={ARO.externo} className="fill-folha stroke-tinta" strokeWidth={PESADA} />
+          {Array.from({ length: 24 }, (_, h) => {
+            if (h % 2 === 1) {
+              const [x1, y1] = polar(ARO.interno, h * 15);
+              const [x2, y2] = polar(ARO.interno + 6, h * 15);
+              return <line key={h} x1={x1} y1={y1} x2={x2} y2={y2} className="stroke-tinta" strokeWidth={FINA} />;
+            }
+            const [x, y] = polar(ARO.rotulos, h * 15);
+            return (
+              <text key={h} x={x} y={y} dy="0.35em" textAnchor="middle" fontSize={13} fontWeight={700} className="rotulo-gmt fill-tinta">
+                {h === 0 ? 24 : h}
+              </text>
+            );
+          })}
+        </g>
+      )}
 
       {/* Caixa e trilho de minutos */}
       <circle r={R + 7} fill="none" className="stroke-tinta" strokeWidth={FINA} />
@@ -299,7 +311,7 @@ export function Mostrador(props: Props) {
           <g key={idx}>{desenharPeca(peca, props, perigo && itens[idx]?.sensivelZona === true, arquitetura.zonaProibida, t)}</g>
         ))}
         {pecas.map((peca, idx) => {
-          const { pontos, balao } = chamada(peca);
+          const { pontos, balao } = chamada(peca, comAro);
           const item = itens[idx];
           const vermelho = perigo && item?.sensivelZona === true;
           return (
