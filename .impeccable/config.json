@@ -11,6 +11,24 @@
         ],
         "createdAt": "2026-11-24T19:51:19.394Z",
         "reason": "Claude: throwaway decision sketch under gitignored .impeccable/mocks, not shipped; the built UI has its own spacing"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-24T20:05:31.661Z",
+        "reason": "Claude: unchosen decision sketch in gitignored .impeccable/mocks, not shipped"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-datamatics.html"
+        ],
+        "createdAt": "2026-11-24T20:05:31.835Z",
+        "reason": "Claude: unchosen decision sketch in gitignored .impeccable/mocks, not shipped"
       }
     ]
   }
