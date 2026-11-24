@@ -1,0 +1,29 @@
+# Node dependencies & builds
+node_modules/
+dist/
+build/
+
+# Logs & temp files
+*.log
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Vite cache & test logs
+.vite/
+
+# Impeccable: consentimento e cache locais de cada máquina; só o
+# .impeccable/config.json é compartilhado.
+.impeccable/config.local.json
+.impeccable/hook.cache.json
+.impeccable/mocks/
+.impeccable/review/
+
+# Registro local de sessões do Claude (retomada), fora do Git
+.sessoes/
+
+# Cache local do wrangler (deploy manual do Pages)
+.wrangler/

@@ -1,0 +1,90 @@
+name: SetMyWatch
+
+# SPA estática: portão de qualidade em todo push/PR, deploy no Cloudflare Pages
+# só na main. Mudança só em documentação não dispara nada.
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Em PR, um push novo cancela a execução anterior. Na main, não: cancelar
+# perderia a publicação em andamento.
+concurrency:
+  group: setmywatch-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Portão de qualidade: nada é publicado sem passar por aqui.
+  test:
+    name: Lint, typecheck e testes
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      # Node 24 traz o npm 11, o mesmo que gera o lockfile.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  pages:
+    name: Deploy no Cloudflare Pages
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      # Sem o segredo, o job avisa e termina verde em vez de quebrar o CI.
+      - name: Verificar segredo da Cloudflare
+        id: segredo
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::warning::Segredo CLOUDFLARE_API_TOKEN ausente: deploy do Pages pulado."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.segredo.outputs.ok == 'true'
+
+      - uses: actions/setup-node@v7
+        if: steps.segredo.outputs.ok == 'true'
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Build
+        if: steps.segredo.outputs.ok == 'true'
+        run: |
+          npm ci
+          npm run build
+
+      - name: Publicar no Pages
+        if: steps.segredo.outputs.ok == 'true'
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # ID da conta não é segredo.
+          accountId: 259add53fc17b3bf0b7ce600c6d60a19
+          wranglerVersion: '3.114.17'
+          command: pages deploy dist --project-name setmywatch --branch main --commit-hash ${{ github.sha }}

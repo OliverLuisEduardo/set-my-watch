@@ -1,0 +1,18 @@
+{
+  "name": "SetMyWatch",
+  "short_name": "SetMyWatch",
+  "description": "Referência de hora, data e complicações para acertar relógios analógicos na bancada.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
