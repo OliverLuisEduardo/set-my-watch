@@ -5,6 +5,7 @@ import {
   ehBissexto,
   fracaoLunar,
   idadeLunarDias,
+  nomeFaseLunar,
   rotuloCicloBissexto,
 } from '../calendario';
 
@@ -62,6 +63,14 @@ describe('fase da lua', () => {
     const f = fracaoLunar(Date.UTC(1999, 0, 1));
     expect(f).toBeGreaterThanOrEqual(0);
     expect(f).toBeLessThan(1);
+  });
+
+  it('nomeia as fases nos limites', () => {
+    expect(nomeFaseLunar(0)).toBe('nova');
+    expect(nomeFaseLunar(0.98)).toBe('nova');
+    expect(nomeFaseLunar(0.25)).toBe('quarto crescente');
+    expect(nomeFaseLunar(0.5)).toBe('cheia');
+    expect(nomeFaseLunar(0.75)).toBe('quarto minguante');
   });
 
   it('idade entre 0 e 29,53 dias', () => {

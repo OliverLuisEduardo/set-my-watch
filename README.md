@@ -10,7 +10,8 @@ Mesmo padrão dos apps do [oliverops-apps](https://github.com/oliverluiseduardo/
 |---|---|
 | Motor (funções puras, testadas) | `src/motor/` |
 | Loop de tempo real (`requestAnimationFrame`) e Wake Lock | `src/hooks/` |
-| Interface | `src/App.tsx` (provisória; a UI definitiva sai do `/impeccable`) |
+| Interface | `src/App.tsx` e `src/components/` (mostrador SVG como folha técnica de calibre; temas Folha e Bancada) |
+| Produto e sistema visual | [PRODUCT.md](PRODUCT.md), [DESIGN.md](DESIGN.md) |
 | PWA e headers do Pages | `public/` |
 | CI/CD | `.github/workflows/ci.yml` |
 

@@ -41,6 +41,18 @@ export function fracaoLunar(epocaMs: number): number {
   return f < 0 ? f + 1 : f;
 }
 
+/** Nome da fase para uma fração do ciclo (0 = nova, 0,5 = cheia). */
+export function nomeFaseLunar(fracao: number): string {
+  if (fracao < 0.03 || fracao >= 0.97) return 'nova';
+  if (fracao < 0.22) return 'crescente';
+  if (fracao < 0.28) return 'quarto crescente';
+  if (fracao < 0.47) return 'crescente gibosa';
+  if (fracao < 0.53) return 'cheia';
+  if (fracao < 0.72) return 'minguante gibosa';
+  if (fracao < 0.78) return 'quarto minguante';
+  return 'minguante';
+}
+
 /** Idade da lua em dias desde a última lua nova. */
 export function idadeLunarDias(epocaMs: number): number {
   return fracaoLunar(epocaMs) * MES_SINODICO_DIAS;

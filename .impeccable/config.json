@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-24T19:51:19.394Z",
+        "reason": "Claude: throwaway decision sketch under gitignored .impeccable/mocks, not shipped; the built UI has its own spacing"
+      }
+    ]
+  }
+}

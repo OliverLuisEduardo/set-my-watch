@@ -17,6 +17,8 @@ export type Complicacao =
 export interface Arquitetura {
   id: string;
   nome: string;
+  /** Rótulo curto para o seletor. */
+  rotulo: string;
   complicacoes: Complicacao[];
   movimento: Movimento;
   zonaProibida: ZonaProibida;
@@ -26,6 +28,7 @@ export const ARQUITETURAS: Arquitetura[] = [
   {
     id: 'tres-ponteiros-data',
     nome: '3 ponteiros + data',
+    rotulo: 'Simples',
     complicacoes: ['data'],
     movimento: 8,
     zonaProibida: ZONA_PROIBIDA_PADRAO,
@@ -33,6 +36,7 @@ export const ARQUITETURAS: Arquitetura[] = [
   {
     id: 'dia-data',
     nome: 'Dia-data',
+    rotulo: 'Dia-data',
     complicacoes: ['data', 'dia-semana'],
     movimento: 8,
     zonaProibida: ZONA_PROIBIDA_PADRAO,
@@ -40,6 +44,7 @@ export const ARQUITETURAS: Arquitetura[] = [
   {
     id: 'multifuncao',
     nome: 'Multifunção (dia, data, 24h)',
+    rotulo: 'Multifunção',
     complicacoes: ['dia-semana', 'data', 'indicador-24h'],
     movimento: 1,
     zonaProibida: ZONA_PROIBIDA_PADRAO,
@@ -47,13 +52,15 @@ export const ARQUITETURAS: Arquitetura[] = [
   {
     id: 'calendario-perpetuo',
     nome: 'Calendário perpétuo',
-    complicacoes: ['data', 'dia-semana', 'mes', 'ciclo-bissexto', 'indicador-24h'],
+    rotulo: 'Perpétuo',
+    complicacoes: ['data', 'dia-semana', 'mes', 'ciclo-bissexto', 'indicador-24h', 'fase-lua'],
     movimento: 1,
     zonaProibida: ZONA_PROIBIDA_PADRAO,
   },
   {
     id: 'gmt',
     nome: 'GMT / segundo fuso',
+    rotulo: 'GMT',
     complicacoes: ['data', 'gmt'],
     movimento: 8,
     zonaProibida: ZONA_PROIBIDA_PADRAO,

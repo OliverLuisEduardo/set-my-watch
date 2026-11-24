@@ -1,3 +1,103 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Folha: filme de desenho fosco, frio (nunca creme), nanquim grafite. */
+  :root,
+  [data-tema='folha'] {
+    --c-papel: 236 240 239;
+    --c-folha: 246 248 247;
+    --c-tinta: 20 24 27;
+    --c-tinta-2: 70 80 88;
+    --c-construcao: 62 123 214;
+    --c-revisao: 196 35 27;
+    --c-revisao-texto: 255 255 255;
+    color-scheme: light;
+  }
+
+  /* Bancada: preto puro, traço branco, contraste máximo para ler de longe. */
+  [data-tema='bancada'] {
+    --c-papel: 0 0 0;
+    --c-folha: 12 14 15;
+    --c-tinta: 255 255 255;
+    --c-tinta-2: 176 184 190;
+    --c-construcao: 74 125 196;
+    --c-revisao: 255 77 64;
+    --c-revisao-texto: 0 0 0;
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-papel text-tinta font-sans antialiased;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  ::selection {
+    background: rgb(var(--c-construcao) / 0.35);
+    color: rgb(var(--c-tinta));
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-construcao));
+    outline-offset: 3px;
+  }
+  select {
+    caret-color: rgb(var(--c-revisao));
+  }
+  * {
+    scrollbar-color: rgb(var(--c-tinta-2) / 0.6) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+@layer components {
+  /* Linha nova de complicação "desenhada" ao trocar de arquitetura. */
+  .tracar {
+    stroke-dasharray: var(--comprimento, 600);
+    stroke-dashoffset: var(--comprimento, 600);
+    animation: tracar 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .surgir {
+    animation: surgir 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/*
+ * No celular o mostrador encolhe para ~0,7 da escala do desenho: os rótulos
+ * pequenos sobem em unidades do SVG para continuarem legíveis a 40 cm (~12 px).
+ */
+@media (max-width: 640px) {
+  .rotulo-sub {
+    font-size: 17px;
+  }
+  .rotulo-gmt {
+    font-size: 18px;
+  }
+  .rotulo-extra {
+    display: none;
+  }
+}
+
+@keyframes tracar {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes surgir {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tracar {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .surgir {
+    animation: none;
+  }
+}
