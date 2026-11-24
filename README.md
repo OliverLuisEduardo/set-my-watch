@@ -40,8 +40,17 @@ npm run build
 
 ## Deploy
 
-Push na `main` roda o portão (lint, typecheck, testes, build) e publica `dist/` no projeto `setmywatch` do Cloudflare Pages. Antes do primeiro deploy:
+No ar em https://setmywatch.pages.dev (projeto `setmywatch` do Cloudflare Pages).
 
-1. Criar o projeto: `npx wrangler pages project create setmywatch --production-branch main`.
-2. Cadastrar o segredo `CLOUDFLARE_API_TOKEN` no repositório (sem ele, o job de deploy avisa e é pulado).
-3. Opcional: domínio próprio no painel do Pages.
+Push na `main` roda o portão (lint, typecheck, testes, build) e publica `dist/` no Pages. O job de deploy precisa do segredo `CLOUDFLARE_API_TOKEN` no repositório; sem ele, avisa e é pulado.
+
+Deploy manual, com o token lido do BWS pelo `scripts/cloudflare/cf.ps1` (nunca impresso):
+
+```powershell
+npm run build
+. ./scripts/cloudflare/cf.ps1
+$ErrorActionPreference = 'Continue'
+$env:CLOUDFLARE_API_TOKEN = $script:CfToken; $env:CLOUDFLARE_ACCOUNT_ID = $script:AccountId
+npx wrangler@3.114.17 pages deploy dist --project-name setmywatch --branch main --commit-hash (git rev-parse HEAD)
+Remove-Item Env:CLOUDFLARE_API_TOKEN
+```
