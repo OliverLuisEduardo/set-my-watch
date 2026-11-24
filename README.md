@@ -40,7 +40,7 @@ npm run build
 
 ## Deploy
 
-No ar em https://setmywatch.pages.dev (projeto `setmywatch` do Cloudflare Pages).
+No ar em https://setmywatch.oliverops.com.br (projeto `setmywatch` do Cloudflare Pages, também em https://setmywatch.pages.dev). O domínio é um CNAME com proxy na zona `oliverops.com.br` apontando para `setmywatch.pages.dev`.
 
 Push na `main` roda o portão (lint, typecheck, testes, build) e publica `dist/` no Pages. O job de deploy precisa do segredo `CLOUDFLARE_API_TOKEN` no repositório; sem ele, avisa e é pulado.
 
